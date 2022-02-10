@@ -131,7 +131,11 @@ class OneCycleScheduler(Callback):
         try:
             return tf.keras.backend.get_value(self.model.optimizer.momentum)
         except AttributeError:
-            return None
+            try:
+                # try for Adam, Adamax, Nadam, etc.
+                return tf.keras.backend.get_value(self.model.optimizer.beta_1)
+            except AttributeError:
+                return None
         
     def set_lr(self, lr):
         try:
@@ -143,7 +147,11 @@ class OneCycleScheduler(Callback):
         try:
             tf.keras.backend.set_value(self.model.optimizer.momentum, mom)
         except AttributeError:
-            pass # ignore
+            try:
+                # try for Adam, Adamax, Nadam, etc.
+                tf.keras.backend.set_value(self.model.optimizer.beta_1, mom)
+            except AttributeError:
+                pass # ignore
 
     def lr_schedule(self):
         return self.phases[self.phase][0]
